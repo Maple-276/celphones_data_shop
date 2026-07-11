@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import '../controllers/purchase_controller.dart';
 import '../core/theme/app_colors.dart';
+import '../models/purchase_model.dart';
 import 'widgets/personal_info_section.dart';
 import 'widgets/device_info_section.dart';
 import 'widgets/media_capture_section.dart';
 import 'widgets/signature_section.dart';
 
 class PurchaseFormScreen extends StatefulWidget {
-  const PurchaseFormScreen({super.key});
+  final PurchaseModel? existing; // Si viene, es edición.
+  const PurchaseFormScreen({super.key, this.existing});
 
   @override
   State<PurchaseFormScreen> createState() => _PurchaseFormScreenState();
 }
 
 class _PurchaseFormScreenState extends State<PurchaseFormScreen> {
-  final PurchaseController _controller = PurchaseController();
+  late final PurchaseController _controller =
+      PurchaseController(existing: widget.existing);
+
+  bool get _isEditing => widget.existing != null;
 
   @override
   void dispose() {
@@ -46,11 +51,16 @@ class _PurchaseFormScreenState extends State<PurchaseFormScreen> {
                   ),
                   onPressed: () {
                     _controller.submit();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Formulario enviado (Mockup)')),
-                    );
+                    if (_isEditing) {
+                      Navigator.of(context).pop(true);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Formulario enviado (Mockup)')),
+                      );
+                    }
                   },
-                  child: const Text('Registrar Compra', style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: Text(_isEditing ? 'Guardar Cambios' : 'Registrar Compra',
+                      style: const TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
               const SizedBox(height: 40),

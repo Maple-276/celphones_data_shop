@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import 'widgets/app_drawer.dart';
 import 'purchase_form_screen.dart';
+import 'registered_devices_screen.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
@@ -11,16 +12,16 @@ class MainLayoutScreen extends StatefulWidget {
 }
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
-  int _selectedIndex = 1; // Default to Nueva Compra for now
+  int _selectedIndex = 1; // Aterriza en Equipos Registrados tras login
 
   final List<Widget> _views = [
-    const Center(child: Text('Vista de Inicio / Dashboard (Próximamente)', style: TextStyle(fontSize: 18))),
     const PurchaseFormScreen(),
+    const RegisteredDevicesScreen(),
   ];
 
   final List<String> _titles = [
-    'Inicio',
     'Registro de Compra de Equipo',
+    'Equipos Registrados',
   ];
 
   void _onDrawerItemSelected(int index) {
