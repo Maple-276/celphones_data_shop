@@ -1,0 +1,16 @@
+{
+  "name": "celphones-backend",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute celphones --file=schema.sql",
+    "db:init:remote": "wrangler d1 execute celphones --file=schema.sql --remote"
+  },
+  "dependencies": {
+    "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

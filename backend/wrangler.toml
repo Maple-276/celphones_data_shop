@@ -1,0 +1,14 @@
+name = "celphones-backend"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Base de datos D1 (SQLite). El database_id lo genera:  wrangler d1 create celphones
+# Pégalo aquí después de crearla.
+[[d1_databases]]
+binding = "DB"
+database_name = "celphones"
+database_id = "PON_AQUI_EL_ID"
+
+# Tu Project ID de Firebase (no es secreto). Lo ves en la consola de Firebase.
+[vars]
+FIREBASE_PROJECT_ID = "tu-proyecto-firebase"
