@@ -43,3 +43,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Backend (Node.js & Wrangler) de®pendencies and artifacts
+/backend/node_modules/
+/backend/.wrangler/
+npm-debug.log
+yarn-error.log
+
+# LLM State Context Docs
+docs/state_context_*.md
+
+# Environment variables and secrets
+.env
+.env.*
+.dev.vars
+*.secret
+*.key
+*.pem
