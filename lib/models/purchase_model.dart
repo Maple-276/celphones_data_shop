@@ -5,7 +5,8 @@ class PurchaseModel {
   String? sellerPhone;
   String? sellerIdNumber;
   String? sellerIdPhotoPath; // Path or url
-  
+  String? purchaseMomentPhotoPath; // Foto de la persona en el momento de la compra
+
   String? deviceModel;
   String? deviceCapacity;
   String? imei;
@@ -17,12 +18,15 @@ class PurchaseModel {
   double? pricePaid;
   
   Uint8List? customerSignature;
-  
+
+  DateTime? createdAt;
+
   PurchaseModel({
     this.sellerName,
     this.sellerPhone,
     this.sellerIdNumber,
     this.sellerIdPhotoPath,
+    this.purchaseMomentPhotoPath,
     this.deviceModel,
     this.deviceCapacity,
     this.imei,
@@ -31,5 +35,23 @@ class PurchaseModel {
     this.deviceImagesPaths = const [],
     this.pricePaid,
     this.customerSignature,
+    this.createdAt,
   });
+
+  PurchaseModel copy() => PurchaseModel(
+        sellerName: sellerName,
+        sellerPhone: sellerPhone,
+        sellerIdNumber: sellerIdNumber,
+        sellerIdPhotoPath: sellerIdPhotoPath,
+        purchaseMomentPhotoPath: purchaseMomentPhotoPath,
+        deviceModel: deviceModel,
+        deviceCapacity: deviceCapacity,
+        imei: imei,
+        serialNumber: serialNumber,
+        deviceDetails: deviceDetails,
+        deviceImagesPaths: List.from(deviceImagesPaths),
+        pricePaid: pricePaid,
+        customerSignature: customerSignature,
+        createdAt: createdAt,
+      );
 }
