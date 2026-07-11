@@ -24,8 +24,8 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Inicio'),
+            leading: const Icon(Icons.add_shopping_cart),
+            title: const Text('Nueva Compra'),
             selected: selectedIndex == 0,
             selectedColor: AppColors.primaryDark,
             onTap: () {
@@ -34,8 +34,8 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.add_shopping_cart),
-            title: const Text('Nueva Compra'),
+            leading: const Icon(Icons.phone_iphone),
+            title: const Text('Equipos Registrados'),
             selected: selectedIndex == 1,
             selectedColor: AppColors.primaryDark,
             onTap: () {
