@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/purchase_model.dart';
-import '../data/purchase_store.dart';
+import '../data/purchase_api.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PurchaseController extends ChangeNotifier {
@@ -65,7 +65,13 @@ class PurchaseController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void submit() {
+  // Si es un path local, lo sube a R2 y devuelve la key. Si ya es una key, la deja igual.
+  Future<String?> _ensureUploaded(String? path) async {
+    if (path == null) return null;
+    return isLocalMediaPath(path) ? await PurchaseApi.uploadFile(path) : path;
+  }
+
+  Future<void> submit() async {
     // Populate model with text fields before submit
     purchaseData.sellerName = nameController.text;
     purchaseData.sellerPhone = phoneController.text;
@@ -78,10 +84,22 @@ class PurchaseController extends ChangeNotifier {
     purchaseData.pricePaid = double.tryParse(priceController.text);
     purchaseData.createdAt ??= DateTime.now(); // conserva la fecha original al editar
 
+    // Sube las fotos locales a R2 y reemplaza los paths por keys antes de persistir.
+    // Las que ya son keys (al editar) no se vuelven a subir.
+    purchaseData.sellerIdPhotoPath = await _ensureUploaded(purchaseData.sellerIdPhotoPath);
+    purchaseData.purchaseMomentPhotoPath =
+        await _ensureUploaded(purchaseData.purchaseMomentPhotoPath);
+    final keys = <String>[];
+    for (final p in purchaseData.deviceImagesPaths) {
+      final k = await _ensureUploaded(p);
+      if (k != null) keys.add(k);
+    }
+    purchaseData.deviceImagesPaths = keys;
+
     if (_editing != null) {
-      PurchaseStore.instance.replace(_editing, purchaseData.copy());
+      await PurchaseApi.update(purchaseData); // ya trae el id de la fila
     } else {
-      PurchaseStore.instance.add(purchaseData.copy());
+      await PurchaseApi.create(purchaseData);
     }
     debugPrint("Purchase submitted: ${purchaseData.sellerName}, ${purchaseData.pricePaid}");
   }
