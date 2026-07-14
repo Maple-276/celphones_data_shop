@@ -7,8 +7,14 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "celphones"
-database_id = "PON_AQUI_EL_ID"
+database_id = "29ae22ee-68f2-468e-b09a-c3a1136caf95"
+
+# Almacén de archivos (fotos: cédula, momento de compra, equipo). Créalo con:
+#   npx wrangler r2 bucket create celphones-media
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "celphones-media"
 
 # Tu Project ID de Firebase (no es secreto). Lo ves en la consola de Firebase.
 [vars]
-FIREBASE_PROJECT_ID = "tu-proyecto-firebase"
+FIREBASE_PROJECT_ID = "celphones-data-shop"

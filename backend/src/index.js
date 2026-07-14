@@ -26,10 +26,18 @@ async function verifyFirebaseToken(token, projectId) {
   }
 }
 
+// CORS: permite que la app web (otro origen, ej. localhost) llame al Worker.
+// ponytail: allow-origin "*" está bien porque la auth es por token, no por cookie.
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "access-control-allow-headers": "authorization,content-type",
+};
+
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...CORS },
   });
 
 // Mapea una fila de la DB al shape que espera el Flutter (camelCase).
@@ -53,6 +61,9 @@ const toApi = (r) => ({
 
 export default {
   async fetch(request, env) {
+    // Preflight de CORS: el navegador lo manda antes del request real. Sin auth.
+    if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
+
     // Trust boundary: exige un ID token válido de Firebase en TODA petición. No lo quites.
     const auth = request.headers.get("authorization") || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
@@ -63,6 +74,33 @@ export default {
     const url = new URL(request.url);
     const parts = url.pathname.split("/").filter(Boolean); // ["purchases", ":id"?]
     const method = request.method;
+
+    // --- Archivos en R2 (fotos) --------------------------------------------
+    // La key lleva el uid como prefijo, así nadie ve archivos de otro usuario.
+
+    // POST /uploads  -> sube un archivo, devuelve su key para guardar en D1.
+    if (method === "POST" && parts[0] === "uploads") {
+      const ct = request.headers.get("content-type") || "application/octet-stream";
+      const ext = ct.split("/")[1] || "bin";
+      const key = `${user.sub}/${crypto.randomUUID()}.${ext}`;
+      const bytes = await request.arrayBuffer(); // foto de pocos MB: buffer entero, simple
+      await env.BUCKET.put(key, bytes, { httpMetadata: { contentType: ct } });
+      return json({ key }, 201);
+    }
+
+    // GET /uploads/<key>  -> descarga el archivo (solo el dueño).
+    if (method === "GET" && parts[0] === "uploads") {
+      const key = parts.slice(1).join("/");
+      if (!key.startsWith(user.sub + "/")) return json({ error: "no autorizado" }, 403);
+      const obj = await env.BUCKET.get(key);
+      if (!obj) return json({ error: "no encontrada" }, 404);
+      return new Response(obj.body, {
+        headers: {
+          "content-type": obj.httpMetadata?.contentType || "application/octet-stream",
+          ...CORS,
+        },
+      });
+    }
 
     if (parts[0] !== "purchases") return json({ error: "ruta desconocida" }, 404);
 
@@ -120,6 +158,42 @@ export default {
         b.createdAt ?? null
       ).run();
       return json({ id: res.meta.last_row_id }, 201);
+    }
+
+    // PUT /purchases/:id  (actualiza; solo si la fila es del usuario)
+    if (method === "PUT" && parts[1]) {
+      let b;
+      try {
+        b = await request.json();
+      } catch {
+        return json({ error: "JSON inválido" }, 400);
+      }
+      const res = await env.DB.prepare(
+        `UPDATE purchases SET
+           seller_name = ?, seller_phone = ?, seller_id_number = ?,
+           seller_id_photo_path = ?, purchase_moment_photo_path = ?,
+           device_model = ?, device_capacity = ?, imei = ?, serial_number = ?,
+           device_details = ?, device_images_paths = ?, price_paid = ?,
+           customer_signature = ?
+         WHERE id = ? AND owner_uid = ?`
+      ).bind(
+        b.sellerName ?? null,
+        b.sellerPhone ?? null,
+        b.sellerIdNumber ?? null,
+        b.sellerIdPhotoPath ?? null,
+        b.purchaseMomentPhotoPath ?? null,
+        b.deviceModel ?? null,
+        b.deviceCapacity ?? null,
+        b.imei ?? null,
+        b.serialNumber ?? null,
+        b.deviceDetails ?? null,
+        JSON.stringify(b.deviceImagesPaths ?? []),
+        b.pricePaid ?? null,
+        b.customerSignature ?? null,
+        parts[1], user.sub // created_at y owner_uid no se tocan
+      ).run();
+      if (!res.meta.changes) return json({ error: "no encontrada" }, 404);
+      return json({ ok: true });
     }
 
     // DELETE /purchases/:id  (solo si la fila es del usuario)
