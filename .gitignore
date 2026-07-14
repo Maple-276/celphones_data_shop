@@ -60,3 +60,9 @@ docs/state_context_*.md
 *.secret
 *.key
 *.pem
+
+# Firebase secrets — NEVER commit these
+google-services.json
+GoogleService-Info.plist
+lib/firebase_options.dart
+firebase_options.dart
