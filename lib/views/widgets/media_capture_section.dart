@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../controllers/purchase_controller.dart';
 import '../../core/theme/app_colors.dart';
+import 'purchase_image.dart';
 
-Widget _img(String path, {double? width}) => kIsWeb
-    ? Image.network(path, height: 100, width: width, fit: BoxFit.cover)
-    : Image.file(File(path), height: 100, width: width, fit: BoxFit.cover);
+Widget _img(String path, {double? width}) =>
+    PurchaseImage(path, height: 100, width: width);
 
 class MediaCaptureSection extends StatelessWidget {
   final PurchaseController controller;

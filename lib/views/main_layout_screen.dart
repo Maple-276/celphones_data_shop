@@ -44,7 +44,12 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         onItemSelected: _onDrawerItemSelected,
         selectedIndex: _selectedIndex,
       ),
-      body: _views[_selectedIndex],
+      // Fondo crema (el gradiente naranja se reserva para el login).
+      // Key por índice: reanima la entrada al cambiar de sección.
+      body: KeyedSubtree(
+        key: ValueKey(_selectedIndex),
+        child: _views[_selectedIndex],
+      ),
     );
   }
 }

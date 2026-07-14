@@ -1,6 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
-import '../login_screen.dart';
+import '../../controllers/auth_controller.dart';
 
 class AppDrawer extends StatelessWidget {
   final Function(int) onItemSelected;
@@ -10,17 +11,35 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final email = user?.email ?? '';
+    // Los de email/contraseña no traen displayName; caemos al inicio del correo.
+    final name = (user?.displayName?.isNotEmpty ?? false)
+        ? user!.displayName!
+        : (email.isNotEmpty ? email.split('@').first : 'Usuario');
+    final photo = user?.photoURL;
+
     return Drawer(
       backgroundColor: AppColors.surface,
       child: Column(
         children: [
-          const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: AppColors.primary),
-            accountName: Text('Usuario Administrador', style: TextStyle(fontWeight: FontWeight.bold)),
-            accountEmail: Text('admin@celphones.com'),
+          UserAccountsDrawerHeader(
+            decoration: const BoxDecoration(color: AppColors.primary),
+            accountName: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            accountEmail: Text(email),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Icon(Icons.person, size: 40, color: AppColors.primary),
+              // Foto de Google si existe; si no, inicial del nombre.
+              backgroundImage: photo != null ? NetworkImage(photo) : null,
+              child: photo == null
+                  ? Text(
+                      name.isNotEmpty ? name[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary),
+                    )
+                  : null,
             ),
           ),
           ListTile(
@@ -48,11 +67,7 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.logout, color: AppColors.error),
             title: const Text('Cerrar Sesión', style: TextStyle(color: AppColors.error)),
-            onTap: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
+            onTap: () => AuthController.signOut(), // el auth gate vuelve al login solo.
           ),
           const SizedBox(height: 16),
         ],

@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../models/purchase_model.dart';
+import 'widgets/purchase_image.dart';
 
 class DeviceDetailScreen extends StatelessWidget {
   final PurchaseModel purchase;
@@ -37,8 +37,8 @@ class DeviceDetailScreen extends StatelessWidget {
             _section('Momento de la compra'),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.file(File(purchase.purchaseMomentPhotoPath!),
-                  height: 160, fit: BoxFit.cover),
+              child: PurchaseImage(purchase.purchaseMomentPhotoPath!,
+                  height: 160),
             ),
           ],
           if (purchase.deviceImagesPaths.isNotEmpty) ...[
@@ -52,8 +52,8 @@ class DeviceDetailScreen extends StatelessWidget {
                 separatorBuilder: (_, i) => const SizedBox(width: 8),
                 itemBuilder: (_, i) => ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.file(File(purchase.deviceImagesPaths[i]),
-                      width: 120, height: 120, fit: BoxFit.cover),
+                  child: PurchaseImage(purchase.deviceImagesPaths[i],
+                      width: 120, height: 120),
                 ),
               ),
             ),

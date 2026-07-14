@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../data/purchase_store.dart';
+import '../data/purchase_api.dart';
 import '../models/purchase_model.dart';
 import 'device_detail_screen.dart';
 import 'purchase_form_screen.dart';
+import 'widgets/fade_slide_in.dart';
 
 enum _Sort { recientes, precioAlto, precioBajo, modelo }
 
@@ -17,6 +18,32 @@ class RegisteredDevicesScreen extends StatefulWidget {
 class _RegisteredDevicesScreenState extends State<RegisteredDevicesScreen> {
   String _query = '';
   _Sort _sort = _Sort.recientes;
+  late Future<List<PurchaseModel>> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _reload();
+  }
+
+  void _reload() => setState(() {
+        _future = PurchaseApi.fetchAll();
+      });
+
+  // Filtra en cliente sobre lo ya traído (mismos campos que buscaba el store).
+  List<PurchaseModel> _filtered(List<PurchaseModel> items) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return items;
+    bool has(String? v) => (v ?? '').toLowerCase().contains(q);
+    return items
+        .where((p) =>
+            has(p.deviceModel) ||
+            has(p.imei) ||
+            has(p.serialNumber) ||
+            has(p.sellerName) ||
+            has(p.sellerIdNumber))
+        .toList();
+  }
 
   List<PurchaseModel> _sorted(List<PurchaseModel> items) {
     final list = List<PurchaseModel>.from(items);
@@ -36,12 +63,11 @@ class _RegisteredDevicesScreenState extends State<RegisteredDevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final results = _sorted(PurchaseStore.instance.search(_query));
-
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
-        child: Column(
+        child: FadeSlideIn(
+          child: Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
@@ -94,21 +120,53 @@ class _RegisteredDevicesScreenState extends State<RegisteredDevicesScreen> {
           ),
         ),
         Expanded(
-          child: results.isEmpty
-              ? const Center(
+          child: FutureBuilder<List<PurchaseModel>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snap.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('No se pudo cargar: ${snap.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: AppColors.error)),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                            onPressed: _reload, child: const Text('Reintentar')),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              final results = _sorted(_filtered(snap.data ?? const []));
+              if (results.isEmpty) {
+                return const Center(
                   child: Text('No hay equipos registrados.',
                       style: TextStyle(color: AppColors.textSecondary)),
-                )
-              : ListView.builder(
+                );
+              }
+              return RefreshIndicator(
+                onRefresh: () async => _reload(),
+                child: ListView.builder(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
                   itemCount: results.length,
                   itemBuilder: (_, i) => _DeviceCard(
                     purchase: results[i],
-                    onChanged: () => setState(() {}),
+                    onChanged: _reload,
                   ),
                 ),
+              );
+            },
+          ),
         ),
       ],
+          ),
         ),
       ),
     );
@@ -191,9 +249,16 @@ class _DeviceCard extends StatelessWidget {
         ],
       ),
     );
-    if (ok == true) {
-      PurchaseStore.instance.remove(purchase);
-      onChanged();
+    if (ok == true && context.mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      try {
+        await PurchaseApi.delete(purchase.id!);
+        onChanged();
+      } catch (e) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('No se pudo eliminar: $e')),
+        );
+      }
     }
   }
 
