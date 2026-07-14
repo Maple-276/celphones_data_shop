@@ -7,8 +7,12 @@ environment:
   sdk: ^3.10.7
 
 dependencies:
+  firebase_auth: ^6.5.4
+  firebase_core: ^4.11.0
   flutter:
     sdk: flutter
+  google_sign_in: ^7.2.0
+  http: ^1.2.2
   image_picker: ^1.2.3
   signature: ^6.3.0
 
@@ -16,6 +20,26 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# Genera los íconos de app (Android/iOS/web) desde un PNG. Correr:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/logo_icon.png"        # ícono cuadrado (iOS/web/legacy)
+  android: true
+  ios: true
+  remove_alpha_ios: true                     # iOS no admite transparencia
+  background_color_ios: "#FFFFFF"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"         # Android adaptativo: fondo blanco
+  adaptive_icon_foreground: "assets/logo_adaptive.png"  # con margen para el recorte
+  web:
+    generate: true
+    background_color: "#FFFFFF"
+    theme_color: "#F58220"
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png       # logo completo (con texto) para dentro de la app
+    - assets/logo_icon.png  # solo el teléfono, cuadrado, para badges/íconos
