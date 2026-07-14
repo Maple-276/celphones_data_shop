@@ -8,7 +8,7 @@
 
 Este repositorio público almacena el código de una aplicación móvil robusta y segura construida con **Flutter** para gestionar registros de compras de teléfonos móviles. Utiliza **Cloudflare Workers** con **SQLite (D1)** para el almacenamiento en el backend y **Firebase Authentication** para el inicio de sesión seguro de los usuarios.
 
-## 🚀 Características
+## Características
 
 ### Para Usuarios (App Flutter)
 - **Autenticación Segura**: Inicio de sesión mediante email y contraseña usando Firebase Authentication.
@@ -21,7 +21,7 @@ Este repositorio público almacena el código de una aplicación móvil robusta 
 - **Base de Datos D1 (SQLite)**: Almacenamiento relacional rápido en el borde (edge).
 - **Validación de Datos**: Asegura la integridad de los datos (IMEI únicos, asociación al `owner_uid`) antes de operaciones SQL.
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 ### Frontend
 - **[Flutter](https://flutter.dev/)** - Toolkit de UI multiplataforma.
@@ -31,7 +31,7 @@ Este repositorio público almacena el código de una aplicación móvil robusta 
 - **[Cloudflare Workers](https://workers.cloudflare.com/)** - Entorno de ejecución Serverless.
 - **[SQLite (D1)](https://developers.cloudflare.com/d1/)** - Base de datos relacional de Cloudflare.
 
-## 🗺️ Arquitectura
+## Arquitectura
 
 La aplicación sigue una arquitectura cliente-servidor segura:
 
